@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id                Int      @id @default(autoincrement())
+  dni               String   @db.Char(8) @unique
+  email             String   @unique
+  password          String
+  nombres           String
+  apellidos         String
+  telefono          String
+  puesto            String
+  superusuario      Boolean  @default(false)
+  fechaInicioTrabajo DateTime @default(now())
+
+  vacaciones Vacacion[]  @relation("UsuarioVacaciones")
+
+  // Relación 1:1 con Laptop
+  laptop            Laptop?
+}
+
+model Laptop {
+  id        Int     @id @default(autoincrement())
+  modelo    String
+  usuarioId Int     @unique
+
+  // Relación inversa con Usuario
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model Vacacion {
+  id         Int      @id @default(autoincrement())
+  usuarioId  Int
+  fechaInicio DateTime
+  fechaFin    DateTime
+  aprobado    Boolean @default(false)
+
+  usuario    Usuario  @relation("UsuarioVacaciones" , fields: [usuarioId], references: [id])
+}
