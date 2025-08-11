@@ -13,39 +13,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Usuario {
-  id                Int      @id @default(autoincrement())
-  dni               String   @db.Char(8) @unique
-  email             String   @unique
+model User {
+  id                Int       @id @default(autoincrement())
+  dni               String    @db.Char(8) @unique
+  email             String    @unique
   password          String
-  nombres           String
-  apellidos         String
-  telefono          String
-  puesto            String
-  superusuario      Boolean  @default(false)
-  fechaInicioTrabajo DateTime @default(now())
+  firstName         String
+  lastName          String
+  phone             String
+  jobTitle          String
+  isSuperuser       Boolean   @default(false)
+  startDate         DateTime  @default(now())
+  isVerified        Boolean   @default(false)
 
-  vacaciones Vacacion[]  @relation("UsuarioVacaciones")
-
-  // Relación 1:1 con Laptop
+  vacations         Vacation[]  @relation("UserVacations")
   laptop            Laptop?
+  verificationCodes VerificationCode[]
+  refreshTokens     RefreshToken[]
+
+  @@map("users")
 }
 
 model Laptop {
-  id        Int     @id @default(autoincrement())
-  modelo    String
-  usuarioId Int     @unique
+  id        Int     @id
+  model     String
+  userId    Int     @unique
 
-  // Relación inversa con Usuario
-  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@map("laptops")
 }
 
-model Vacacion {
+model Vacation {
   id         Int      @id @default(autoincrement())
-  usuarioId  Int
-  fechaInicio DateTime
-  fechaFin    DateTime
-  aprobado    Boolean @default(false)
+  userId     Int
+  startDate  DateTime
+  endDate    DateTime
+  isApproved Boolean  @default(false)
 
-  usuario    Usuario  @relation("UsuarioVacaciones" , fields: [usuarioId], references: [id])
+  user       User     @relation("UserVacations", fields: [userId], references: [id])
+
+  @@map("vacations")
 }
+
+model VerificationCode {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("verification_codes")
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("refresh_tokens")
+}
+
