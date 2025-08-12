@@ -24,7 +24,7 @@ async function login(req, res) {
 
   // Access Token
   const accessToken = jwt.sign(
-    { userId: user.id },
+    { userId: user.id , isSuperuser: user.isSuperuser },
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: '1h' }
   );
