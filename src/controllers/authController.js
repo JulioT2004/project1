@@ -12,11 +12,15 @@ function generateRefreshToken(userId) {
 async function login(req, res) {
   const { email, password } = req.body;
 
-  // Validar credenciales...
+  // Validar credenciales
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || user.password !== password) {
     return res.status(401).json({ message: 'Credenciales inválidas' });
   }
+  if (!user.isVerified) {
+  return res.status(403).json({ error: "Debes verificar tu cuenta antes de iniciar sesión" });
+}
+
 
   // Access Token
   const accessToken = jwt.sign(
@@ -45,3 +49,5 @@ async function login(req, res) {
 
 
 module.exports = { login };
+
+

@@ -1,3 +1,4 @@
+
 function generateCode(len=6) {
 
 	const min = Math.pow(10, len-1);
