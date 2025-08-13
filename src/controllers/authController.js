@@ -1,5 +1,6 @@
 const prisma = require('../config/db.js');
 const jwt = require('jsonwebtoken');
+const bcrypt = require("bcrypt");
 
 const REFRESH_TOKEN_EXPIRATION_DAYS = 7;
 
@@ -14,7 +15,10 @@ async function login(req, res) {
 
   // Validar credenciales
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || user.password !== password) {
+
+  const validPassword = await bcrypt.compare(password, user.password);
+
+  if (!user || !validPassword) {
     return res.status(401).json({ message: 'Credenciales inválidas' });
   }
   if (!user.isVerified) {

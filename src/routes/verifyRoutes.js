@@ -64,7 +64,7 @@ router.post("/verify", async (req, res) => {
 
     // Eliminar todos los códigos de ese usuario
     await prisma.verificationCode.deleteMany({
-    where: { userId: user.id }
+    where: { userId: user1.id }
         });
     
 

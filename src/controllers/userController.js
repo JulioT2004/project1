@@ -15,7 +15,7 @@ async function createUser(req, res) {
         lastName,
         phone,
         jobTitle,
-        password,
+        password: hashedPassword,
         isSuperuser: false,
         isVerified: false,
         startDate: new Date()

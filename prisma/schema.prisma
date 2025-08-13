@@ -25,6 +25,7 @@ model User {
   isSuperuser       Boolean   @default(false)
   startDate         DateTime  @default(now())
   isVerified        Boolean   @default(false)
+  vacationDayAvailable Int @default(0)
 
   vacations         Vacation[]  @relation("UserVacations")
   laptop            Laptop?
@@ -44,12 +45,19 @@ model Laptop {
   @@map("laptops")
 }
 
+enum VacationStatus {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+
 model Vacation {
   id         Int      @id @default(autoincrement())
   userId     Int
   startDate  DateTime
   endDate    DateTime
-  isApproved Boolean  @default(false)
+  status      VacationStatus @default(PENDING)
 
   user       User     @relation("UserVacations", fields: [userId], references: [id])
 
