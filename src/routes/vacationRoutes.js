@@ -7,9 +7,9 @@ const { vacationSchema } = require("../schemas/vacationSchema");
 const { createVacation , updateVacation , getVacations , getMyVacations} = require("../controllers/vacationController");
 
 router.get("/", authenticateToken, authorizeSuperUser, getVacations);
-router.get("/me", authenticateToken, authorizeSuperUser, getMyVacations);
+router.get("/me", authenticateToken, getMyVacations);
 router.post("/", authenticateToken, validate(vacationSchema), createVacation);
-router.put("/:id", authenticateToken, authorizeSuperUser , updateVacation);
+router.patch("/:id", authenticateToken, authorizeSuperUser , updateVacation);
 
 
 module.exports = router;

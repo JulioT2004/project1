@@ -16,14 +16,22 @@ async function login(req, res) {
   // Validar credenciales
   const user = await prisma.user.findUnique({ where: { email } });
 
+  
+
+  if (!user) {
+    return res.status(401).json({ message: 'No existe email' });
+  }
+
   const validPassword = await bcrypt.compare(password, user.password);
 
-  if (!user || !validPassword) {
-    return res.status(401).json({ message: 'Credenciales inválidas' });
+  if(!validPassword){
+return res.status(401).json({ message: 'Contraseña incorrecta' });
+
   }
   if (!user.isVerified) {
   return res.status(403).json({ error: "Debes verificar tu cuenta antes de iniciar sesión" });
 }
+
 
 
   // Access Token

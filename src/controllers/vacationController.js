@@ -112,14 +112,7 @@ async function sendVacationStatusEmail(vacation) {
 async function updateVacation(req, res) {
     const { id } = req.params;
     const { status } = req.body;
-    const vacation = await prisma.vacation.findUnique({
-        where: { id: parseInt(id) },
-        select: { userId: true , startDate : true , endDate: true }
-    });
 
-    if (!vacation) {
-        return res.status(404).json({ error: 'Solicitud de vacaciones no encontrada.' });
-    }
 
     if (status !== 'APPROVED' && status !== 'DENIED') {
         return res.status(400).json({ error: 'Estado inválido. Debe ser APPROVED o DENIED.' });
@@ -128,7 +121,7 @@ async function updateVacation(req, res) {
     try {
         const updatedVacation = await prisma.vacation.update({
             where: { id: parseInt(id) },
-            data: { status },
+            data: { status , reviewedBy: req.user.userId },
         });
 
         const diffTime = updatedVacation.endDate.getTime() - updatedVacation.startDate.getTime();
@@ -139,7 +132,7 @@ async function updateVacation(req, res) {
         // Si la solicitud es aprobada, actualizar los días disponibles del usuario
         if (status === 'APPROVED') {
             await prisma.user.update({
-                where: { id: vacation.userId },
+                where: { id: updatedVacation.userId },
                 data: { vacationDayAvailable: { decrement: diffDays } }
             });
         }
@@ -152,6 +145,9 @@ async function updateVacation(req, res) {
          sendVacationStatusEmail(updatedVacation);
 
     } catch (error) {
+        if (error.code === 'P2025') {
+            return res.status(404).json({ error: 'Solicitud de vacaciones no encontrada.' });
+        }
         console.error("Error al actualizar solicitud de vacaciones:", error);
         return res.status(500).json({ message: "Error interno del servidor" });
     }
@@ -163,6 +159,13 @@ async function getVacations(req, res) {
         const vacations = await prisma.vacation.findMany({
             include: {
                 user: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        email: true
+                    }
+                },
+                reviewer: {
                     select: {
                         firstName: true,
                         lastName: true,
@@ -189,7 +192,14 @@ async function getVacations(req, res) {
                             lastName: true,
                             email: true
                         }
+                    },
+                    reviewer: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        email: true
                     }
+                }
                 }
             });
             return res.status(200).json(vacations);
